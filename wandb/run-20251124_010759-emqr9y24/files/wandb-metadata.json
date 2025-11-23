@@ -1,0 +1,39 @@
+{
+  "os": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "CPython 3.12.3",
+  "startedAt": "2025-11-23T18:07:59.898108Z",
+  "program": "/home/pavt1024/deeplearning/text_recognition/train.py",
+  "codePath": "train.py",
+  "codePathLocal": "train.py",
+  "git": {
+    "remote": "https://github.com/ai-bigdata-team/text_recognition.git",
+    "commit": "dd447fda401bc92b5f95e2c2e1dc76624ce37f75"
+  },
+  "email": "phamvanthanh.csp@gmail.com",
+  "root": "/home/pavt1024/deeplearning/text_recognition",
+  "host": "ASUS-PAVT",
+  "executable": "/home/pavt1024/deeplearning/text_recognition/.venv/bin/python",
+  "cpu_count": 4,
+  "cpu_count_logical": 8,
+  "gpu": "NVIDIA GeForce GTX 1650",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "1081101176832",
+      "used": "107077099520"
+    }
+  },
+  "memory": {
+    "total": "6214094848"
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce GTX 1650",
+      "memoryTotal": "4294967296",
+      "architecture": "Turing",
+      "uuid": "GPU-67a28385-f21d-1b44-f1c5-cc3607b80e81"
+    }
+  ],
+  "cudaVersion": "12.8",
+  "writerId": "b2f5l4amvwkbvqkghkq3m5ifuei67lyw"
+}

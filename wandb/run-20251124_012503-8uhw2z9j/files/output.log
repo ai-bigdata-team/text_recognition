@@ -1,0 +1,41 @@
+iter:    200 - train loss: 0.727 - lr: 1.91e-05 - load time: 1.15 - gpu time: 165.86
+Traceback (most recent call last):
+  File "/home/pavt1024/deeplearning/text_recognition/train.py", line 33, in <module>
+    trainer.train()
+  File "/home/pavt1024/deeplearning/text_recognition/trainer.py", line 129, in train
+    loss = self.step(batch)
+           ^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/trainer.py", line 361, in step
+    outputs = self.model(img, tgt_input, tgt_key_padding_mask=tgt_padding_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/vietocr/model/transformerocr.py", line 38, in forward
+    outputs = self.transformer(src, tgt_input, tgt_key_padding_mask=tgt_key_padding_mask)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/vietocr/model/seqmodel/transformer.py", line 39, in forward
+    src = self.pos_enc(src*math.sqrt(self.d_model))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/vietocr/model/seqmodel/transformer.py", line 95, in forward
+    return self.dropout(x)
+           ^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1918, in __getattr__
+    def __getattr__(self, name: str) -> Any:
+
+KeyboardInterrupt

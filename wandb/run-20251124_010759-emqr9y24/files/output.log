@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/home/pavt1024/deeplearning/text_recognition/train.py", line 33, in <module>
+    trainer.train()
+  File "/home/pavt1024/deeplearning/text_recognition/trainer.py", line 123, in train
+    batch = next(data_iter)
+            ^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 701, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1465, in _next_data
+    return self._process_data(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1491, in _process_data
+    data.reraise()
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/_utils.py", line 715, in reraise
+    raise exception
+TypeError: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/utils/data/_utils/worker.py", line 351, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 52, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+            ~~~~~~~~~~~~^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/vietocr/loader/dataloader.py", line 109, in __getitem__
+    img, word, img_path = self.read_data(idx)
+                          ^^^^^^^^^^^^^^^^^^^
+  File "/home/pavt1024/deeplearning/text_recognition/.venv/lib/python3.12/site-packages/vietocr/loader/dataloader.py", line 100, in read_data
+    img = self.transform(img)
+          ^^^^^^^^^^^^^^^^^^^
+TypeError: ImgAugTransformV2.__init__() takes 1 positional argument but 2 were given

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/pavt1024/deeplearning/text_recognition/train.py", line 33, in <module>
+    trainer.train()
+  File "/home/pavt1024/deeplearning/text_recognition/trainer.py", line 136, in train
+    info = "iter: {06d} - train loss: {:.3f} - lr: {:.2e} - load time: {:.2f} - gpu time: {:.2f}".format(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: '06d'

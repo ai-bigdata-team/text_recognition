@@ -1,1 +1,7 @@
-TrOCR/OCR/datasets
+references/TrOCR/OCR/datasets
+vietocr
+weights
+train_hw
+valid_hw
+.venv
+__pycache__

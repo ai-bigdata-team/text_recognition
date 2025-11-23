@@ -1,0 +1,7 @@
+channels_list: [3, 64, 128, 256, 512]
+kernel_size: 3
+padding: 1
+stride: 1
+pooling_kernel_size: 2
+pooling_stride: 2
+pooling_padding: 0
