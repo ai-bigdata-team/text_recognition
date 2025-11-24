@@ -1,0 +1,34 @@
+iter:    200 - train loss: 1.566 - lr: 1.23e-05 - load time: 0.33 - gpu time: 66.15
+iter:    400 - train loss: 1.354 - lr: 1.31e-05 - load time: 0.24 - gpu time: 52.96
+iter:    600 - train loss: 1.258 - lr: 1.46e-05 - load time: 0.24 - gpu time: 46.09
+iter:    800 - train loss: 1.211 - lr: 1.65e-05 - load time: 0.41 - gpu time: 66.50
+iter:   1000 - train loss: 1.183 - lr: 1.90e-05 - load time: 0.26 - gpu time: 51.80
+iter:   1200 - train loss: 1.149 - lr: 2.21e-05 - load time: 0.24 - gpu time: 46.20
+iter:   1400 - train loss: 1.127 - lr: 2.57e-05 - load time: 0.42 - gpu time: 66.74
+iter:   1600 - train loss: 1.100 - lr: 2.98e-05 - load time: 0.24 - gpu time: 51.92
+iter:   1800 - train loss: 1.086 - lr: 3.44e-05 - load time: 0.22 - gpu time: 35.74
+iter:   2000 - train loss: 1.064 - lr: 3.95e-05 - load time: 0.23 - gpu time: 32.95
+iter:   2000 - valid loss: 1.039
+- acc full seq: 0.0071 - acc per char: 0.4101 - CER: 0.2126 - WER: 0.4910
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 2001 that is less than the current step 2005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 2002 that is less than the current step 2005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 2003 that is less than the current step 2005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 2004 that is less than the current step 2005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+iter:   2200 - train loss: 1.049 - lr: 4.51e-05 - load time: 0.42 - gpu time: 33.32
+iter:   2400 - train loss: 1.017 - lr: 5.10e-05 - load time: 0.22 - gpu time: 32.65
+iter:   2600 - train loss: 1.019 - lr: 5.74e-05 - load time: 0.22 - gpu time: 33.15
+iter:   2800 - train loss: 1.002 - lr: 6.42e-05 - load time: 0.39 - gpu time: 33.52
+iter:   3000 - train loss: 0.972 - lr: 7.14e-05 - load time: 0.21 - gpu time: 32.64
+iter:   3200 - train loss: 0.978 - lr: 7.89e-05 - load time: 0.22 - gpu time: 33.43
+iter:   3400 - train loss: 0.957 - lr: 8.66e-05 - load time: 0.41 - gpu time: 33.14
+iter:   3600 - train loss: 0.943 - lr: 9.47e-05 - load time: 0.23 - gpu time: 33.12
+iter:   3800 - train loss: 0.928 - lr: 1.03e-04 - load time: 0.22 - gpu time: 33.17
+iter:   4000 - train loss: 0.924 - lr: 1.12e-04 - load time: 0.23 - gpu time: 32.97
+iter:   4000 - valid loss: 0.945
+- acc full seq: 0.0170 - acc per char: 0.5026 - CER: 0.1616 - WER: 0.3852
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 4001 that is less than the current step 4005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 4002 that is less than the current step 4005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 4003 that is less than the current step 4005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+[34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 4004 that is less than the current step 4005. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+iter:   4200 - train loss: 0.914 - lr: 1.20e-04 - load time: 0.41 - gpu time: 32.93
+iter:   4400 - train loss: 0.896 - lr: 1.29e-04 - load time: 0.22 - gpu time: 32.90

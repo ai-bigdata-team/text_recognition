@@ -1,0 +1,16 @@
+iter:    200 - train loss: 0.736 - lr: 1.23e-05 - load time: 0.37 - gpu time: 33.53
+iter:    400 - train loss: 0.719 - lr: 1.31e-05 - load time: 0.23 - gpu time: 32.99
+iter:    600 - train loss: 0.723 - lr: 1.46e-05 - load time: 0.21 - gpu time: 33.02
+iter:    800 - train loss: 0.715 - lr: 1.65e-05 - load time: 0.41 - gpu time: 33.18
+iter:   1000 - train loss: 0.723 - lr: 1.90e-05 - load time: 0.25 - gpu time: 33.45
+iter:   1200 - train loss: 0.707 - lr: 2.21e-05 - load time: 0.25 - gpu time: 32.87
+iter:   1400 - train loss: 0.719 - lr: 2.57e-05 - load time: 0.41 - gpu time: 32.95
+iter:   1600 - train loss: 0.719 - lr: 2.98e-05 - load time: 0.23 - gpu time: 33.69
+iter:   1800 - train loss: 0.711 - lr: 3.44e-05 - load time: 0.22 - gpu time: 33.12
+iter:   2000 - train loss: 0.710 - lr: 3.95e-05 - load time: 0.25 - gpu time: 33.21
+Traceback (most recent call last):
+  File "/workspace/text_recognition/train.py", line 33, in <module>
+    trainer.train()
+  File "/workspace/text_recognition/trainer.py", line 153, in train
+    '- acc full seq: {:.4f} - acc per char: {:.4f} - CER: {:.4f} - WER: {:.4f}'.format(
+AttributeError: 'int' object has no attribute '6d'

@@ -1,0 +1,98 @@
+_wandb:
+    value:
+        cli_version: 0.23.0
+        e:
+            ob3g2j1ryhgv3qe26631139i56j6yf0h:
+                codePath: train.py
+                codePathLocal: train.py
+                cpu_count: 64
+                cpu_count_logical: 128
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "107374182400"
+                        used: "16849555456"
+                email: phamvanthanh.csp@gmail.com
+                executable: /workspace/text_recognition/.venv/bin/python
+                git:
+                    commit: 9be290a4f22c85aff6ed436c7ddbc4acfb261562
+                    remote: https://github.com/ai-bigdata-team/text_recognition.git
+                gpu: NVIDIA GeForce RTX 5060 Ti
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Blackwell
+                      cudaCores: 4608
+                      memoryTotal: "17103323136"
+                      name: NVIDIA GeForce RTX 5060 Ti
+                      uuid: GPU-1243dcee-1d55-1dad-281c-c05e8cf8171b
+                host: practical-rattlesnake
+                memory:
+                    total: "540637872128"
+                os: Linux-6.14.7-sm1-x86_64-with-glibc2.35
+                program: /workspace/text_recognition/train.py
+                python: CPython 3.10.13
+                root: /workspace/text_recognition
+                startedAt: "2025-11-23T19:13:31.512543Z"
+                writerId: ob3g2j1ryhgv3qe26631139i56j6yf0h
+        m:
+            - "1": train/loss
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+            - "1": iteration
+              "6": []
+              "7": []
+            - "1": val/loss
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+            - "1": metrics/acc_full_seq
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+            - "1": metrics/acc_per_char
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+            - "1": metrics/CER
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+            - "1": metrics/WER
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7": []
+        python_version: 3.10.13
+        t:
+            "1":
+                - 1
+                - 5
+                - 41
+                - 53
+                - 80
+            "2":
+                - 1
+                - 5
+                - 41
+                - 53
+                - 80
+            "3":
+                - 7
+                - 13
+                - 61
+            "4": 3.10.13
+            "5": 0.23.0
+            "12": 0.23.0
+            "13": linux-x86_64
