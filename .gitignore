@@ -3,6 +3,8 @@ train_hw
 valid_hw
 */__pycache__
 datasets
-logs/checkpoints
+*.pth
+*.zip
+references/vietocr/sample
 wandb
-.env.env
+.env
