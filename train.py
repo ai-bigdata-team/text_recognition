@@ -1,5 +1,5 @@
 from vietocr.tool.config import Cfg
-from trainer import Trainer
+from models.trainer import Trainer
 import argparse
 
 def get_args():
@@ -8,6 +8,7 @@ def get_args():
     parser.add_argument("--valid-every", type=int, default=2000, help="validation interval")
     parser.add_argument("--max-steps", type=int, default=100000, help="max steps")
     parser.add_argument("--data-root", required=True, help="data folder")
+    parser.add_argument("--logging-dir", default="logs/training_info", help="Directory for logging")
     args = parser.parse_args()
     return args
 if __name__ == "__main__":

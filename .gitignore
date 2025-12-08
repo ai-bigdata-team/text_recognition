@@ -1,9 +1,8 @@
 references/TrOCR/OCR/datasets
-vietocr
-weights
 train_hw
 valid_hw
-.venv
-__pycache__
-data_line
-models
+*/__pycache__
+datasets
+logs/checkpoints
+wandb
+.env.env

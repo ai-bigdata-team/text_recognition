@@ -2,7 +2,7 @@ from vietocr.optim.optim import ScheduledOptim
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
 from torch.optim import Adam, AdamW
 
-from utils import download_weights, build_model, translate, batch_translate_beam_search
+from models.utils import download_weights, build_model, translate, batch_translate_beam_search
 from vietocr.tool.logger import Logger 
 from vietocr.loader.aug import ImgAugTransformV2
 
@@ -274,7 +274,7 @@ class Trainer:
         checkpoint = torch.load(filename)
         
         optim = ScheduledOptim(
-	       Adam(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09),
+	       AdamW(self.model.parameters(), betas=(0.9, 0.98), eps=1e-09),
             	self.config['transformer']['d_model'], **self.config['optimizer'])
 
         self.optimizer.load_state_dict(checkpoint['optimizer'])
