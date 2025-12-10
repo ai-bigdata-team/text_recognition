@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import './App.css'
 
 function App() {
@@ -11,23 +13,29 @@ function App() {
 
   const handleImageSelect = (files) => {
     const newImages = []
-    Array.from(files).forEach((file, index) => {
-      if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          newImages.push({
-            id: Date.now() + index,
-            file: file,
-            preview: reader.result,
-            text: '',
-            isProcessed: false
-          })
-          if (newImages.length === files.length) {
-            setImages(prev => [...prev, ...newImages])
-          }
+    const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+    
+    if (validFiles.length === 0) {
+      toast.error('Vui lòng chọn file ảnh hợp lệ!')
+      return
+    }
+    
+    Array.from(validFiles).forEach((file, index) => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        newImages.push({
+          id: Date.now() + index,
+          file: file,
+          preview: reader.result,
+          text: '',
+          isProcessed: false
+        })
+        if (newImages.length === validFiles.length) {
+          setImages(prev => [...prev, ...newImages])
+          toast.success(`Đã thêm ${validFiles.length} ảnh thành công!`)
         }
-        reader.readAsDataURL(file)
       }
+      reader.readAsDataURL(file)
     })
   }
 
@@ -54,38 +62,90 @@ function App() {
   }
 
   const handleRecognize = async () => {
-    if (images.length === 0) return
+    if (images.length === 0) {
+      toast.warning('Vui lòng tải ảnh lên trước!')
+      return
+    }
+    
+    const unprocessedCount = images.filter(img => !img.isProcessed).length
+    if (unprocessedCount === 0) {
+      toast.info('Tất cả ảnh đã được xử lý rồi!')
+      return
+    }
     
     setIsProcessing(true)
     setProcessingProgress(0)
+    toast.info(`Bắt đầu xử lý ${unprocessedCount} ảnh... 🚀`)
     
-    // Simulate API call với progress - thay thế bằng API thực tế
+    const API_URL = 'http://localhost:8000/api/ocr'
+    let successCount = 0
+    let errorCount = 0
+    
     for (let i = 0; i < images.length; i++) {
       if (!images[i].isProcessed) {
-        await new Promise(resolve => {
-          setTimeout(() => {
-            const mockText = `📄 Văn bản từ ảnh ${i + 1}\n\n✨ Đây là nội dung được nhận diện từ hình ảnh số ${i + 1}.\n\n🎯 Hệ thống đã phân tích và trích xuất văn bản với độ chính xác cao.\n\n💡 Bạn có thể thay thế đoạn code này bằng API thực tế để nhận diện chữ viết từ ảnh của bạn.\n\n🚀 Kết quả hiển thị với animation mượt mà và giao diện hiện đại!`
-            
-            setImages(prev => prev.map((img, idx) => 
-              idx === i ? { ...img, text: mockText, isProcessed: true } : img
-            ))
-            setProcessingProgress(((i + 1) / images.length) * 100)
-            resolve()
-          }, 1500)
-        })
+        try {
+          const formData = new FormData()
+          formData.append('file', images[i].file)
+          
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            body: formData,
+          })
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          
+          const result = await response.json()
+          const recognizedText = result.text || 'Không thể nhận diện văn bản'
+          
+          setImages(prev => prev.map((img, idx) => 
+            idx === i ? { ...img, text: recognizedText, isProcessed: true } : img
+          ))
+          
+          successCount++
+          toast.success(`Nhận diện thành công ảnh ${i + 1}!`, { autoClose: 2000 })
+          
+        } catch (error) {
+          console.error('Error recognizing image:', error)
+          errorCount++
+          toast.error(`Lỗi khi xử lý ảnh ${i + 1}: ${error.message}`)
+          
+          setImages(prev => prev.map((img, idx) => 
+            idx === i ? { 
+              ...img, 
+              text: `Lỗi: ${error.message}\n\nKhông thể kết nối đến API. Vui lòng kiểm tra:\n• Backend có đang chạy không?\n• URL API có đúng không?\n• CORS đã được cấu hình chưa?`, 
+              isProcessed: true 
+            } : img
+          ))
+        }
+        
+        setProcessingProgress(((i + 1) / images.length) * 100)
       }
     }
     
     setIsProcessing(false)
     setProcessingProgress(0)
+    
+    // Summary notification
+    if (errorCount === 0) {
+      toast.success(`🎉 Hoàn thành! Đã xử lý thành công ${successCount} ảnh!`, { autoClose: 5000 })
+    } else {
+      toast.warning(`Hoàn thành với ${successCount} thành công và ${errorCount} lỗi`, { autoClose: 5000 })
+    }
   }
 
   const handleReset = () => {
+    if (images.length === 0) {
+      toast.info('Chưa có ảnh nào để xóa!')
+      return
+    }
     setImages([])
     setActiveImageIndex(0)
     setIsProcessing(false)
     setProcessingProgress(0)
     if (fileInputRef.current) fileInputRef.current.value = ''
+    toast.success('Đã xóa tất cả ảnh!')
   }
 
   const handleRemoveImage = (id) => {
@@ -93,6 +153,7 @@ function App() {
     if (activeImageIndex >= images.length - 1) {
       setActiveImageIndex(Math.max(0, images.length - 2))
     }
+    toast.success('Đã xóa ảnh!', { autoClose: 2000 })
   }
 
   const activeImage = images[activeImageIndex]
@@ -344,13 +405,15 @@ function App() {
               <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl p-8 border border-purple-500/30 min-h-96 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20 hover:border-purple-500/50">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <span className="animate-pulse-slow">📝</span>
                     Kết quả nhận diện
                   </h2>
                   <div className="flex gap-2">
                     {activeImage && activeImage.text && (
                       <button
-                        onClick={() => navigator.clipboard.writeText(activeImage.text)}
+                        onClick={() => {
+                          navigator.clipboard.writeText(activeImage.text)
+                          toast.success('Đã copy văn bản!', { autoClose: 2000 })
+                        }}
                         className="px-4 py-2 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition-all text-sm font-medium backdrop-blur-sm hover:scale-105 shadow-lg shadow-blue-500/30"
                       >
                         📋 Copy ảnh này
@@ -358,7 +421,10 @@ function App() {
                     )}
                     {allText && (
                       <button
-                        onClick={() => navigator.clipboard.writeText(allText)}
+                        onClick={() => {
+                          navigator.clipboard.writeText(allText)
+                          toast.success('Đã copy toàn bộ văn bản!', { autoClose: 2000 })
+                        }}
                         className="px-4 py-2 bg-purple-600/80 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-medium backdrop-blur-sm hover:scale-105 shadow-lg shadow-purple-500/30"
                       >
                         📋 Copy tất cả
@@ -444,6 +510,21 @@ function App() {
           </div>
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        style={{ zIndex: 9999 }}
+      />
     </div>
   )
 }
