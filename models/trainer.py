@@ -2,7 +2,7 @@ from vietocr.optim.optim import ScheduledOptim
 from vietocr.optim.labelsmoothingloss import LabelSmoothingLoss
 from torch.optim import Adam, AdamW
 
-from models.utils import download_weights, build_model, translate, batch_translate_beam_search
+from utils.utils import download_weights, build_model, translate, batch_translate_beam_search
 from vietocr.tool.logger import Logger 
 from vietocr.loader.aug import ImgAugTransformV2
 
@@ -19,6 +19,7 @@ from metrics.utils import compute_accuracy
 from PIL import Image
 import numpy as np
 import os
+import json
 import matplotlib.pyplot as plt
 import time
 import wandb
@@ -44,6 +45,7 @@ class Trainer:
 
         self.checkpoint = config['trainer']['checkpoint']
         self.export_weights = config['trainer']['export']
+        self.logging_dir = config['trainer']["logging_dir"]
         self.metrics = config['trainer']['metrics']
         logger = config['trainer']['log']
 
@@ -62,13 +64,13 @@ class Trainer:
         transforms = None
         if self.image_aug:
             transforms = augmentor
-        self.train_gen = self.data_gen('train_{}'.format(self.dataset_name),
+        self.train_gen = self.data_gen('datasets/{}_processed/train'.format(self.dataset_name),
                                        self.data_root,
                                        self.train_annotation,
                                        self.masked_language_model,
                                        transform = transforms)
         if self.valid_annotation:
-            self.valid_gen = self.data_gen('valid_{}'.format(self.dataset_name),
+            self.valid_gen = self.data_gen('datasets/{}_processed/valid'.format(self.dataset_name),
                                            self.data_root,
                                            self.valid_annotation,
                                            masked_language_model=False)
@@ -97,6 +99,20 @@ class Trainer:
         return gen
      
     def train(self, project_name = 'text-recogntion', experiment_name = None):
+        checkpoint_dir = f"{self.logging_dir}/checkpoints"
+        if os.path.isdir(checkpoint_dir):
+            print(f"Folder exists! Loading pretrained model")
+            found = False
+            for file in os.listdir(checkpoint_dir):
+                if file.endswith("last.pth"):
+                    absolute_dir = os.path.abspath(checkpoint_dir)
+                    file = os.path.join(absolute_dir, file)
+                    self.load_weights(file)
+                    found = True
+                    print(f"Load weights successfully from {file}")
+                    break
+                if not found:
+                    print("No models founded, training from scatch")
         if experiment_name is None:
             experiment_name = f"experiment-{time.time()}"
         wandb.init(
@@ -181,9 +197,7 @@ class Trainer:
         self.model.train()
         return total_loss
 
-    def predict(self, sample = None, wandb=False):
-        if wandb:
-            table = wandb.Table(columns=["ground_truth", "prediction"])
+    def predict(self, sample = None, save_predictions=True):
         pred_sents = []
         actual_sents = []
         img_files = []
@@ -201,10 +215,13 @@ class Trainer:
             actual_sents.extend(actual_sent)
             if sample is not None and len(pred_sents) > sample:
                 break
-        if wandb:
+        results = []
+        if save_predictions:
             for actual, pred in zip(actual_sents, pred_sents):
-                table.add_data(actual, pred)
-            wandb.log({"predictions_table": table, "iteration":self.iter})
+                results.append({"actual": actual, "prediction": pred})
+            with open(f"{self.logging_dir}/predictions--iter={self.iter}.jsonl", "w", encoding = "utf-8") as f:
+                for sample in results:
+                    f.write(json.dumps(sample, ensure_ascii=False)+"\n")
         return pred_sents, actual_sents, img_files, prob
 
     def precision(self, sample=None):
@@ -302,7 +319,7 @@ class Trainer:
                 print('{} missmatching shape, required {} but found {}'.format(name, param.shape, state_dict[name].shape))
                 del state_dict[name]
 
-        self.model.load_state_dict(state_dict, strict=False)
+        self.model.load_state_dict(state_dict, strict=True)
 
     def save_weights(self, filename):
         path, _ = os.path.split(filename)

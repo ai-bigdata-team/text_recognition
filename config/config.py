@@ -12,9 +12,9 @@ url_config = {
 }
 
 
-class Cfg(dict):
+class Config(dict):
     def __init__(self, config_dict):
-        super(Cfg, self).__init__(**config_dict)
+        super(Config, self).__init__(**config_dict)
         self.__dict__ = self
 
     @staticmethod
@@ -25,7 +25,7 @@ class Cfg(dict):
             config = yaml.safe_load(f)
         base_config.update(config)
 
-        return Cfg(base_config)
+        return Config(base_config)
 
     @staticmethod
     def load_config_from_name(name):
@@ -33,7 +33,7 @@ class Cfg(dict):
         config = download_config(url_config[name])
 
         base_config.update(config)
-        return Cfg(base_config)
+        return Config(base_config)
 
     def save(self, fname):
         with open(fname, "w", encoding="utf-8") as outfile:
