@@ -52,7 +52,7 @@ if __name__ == "__main__":
     config['num_decoder_layers'] = 4
     config['device'] = 'cuda:0'
     
-    trainer = Trainer(config, pretrained=True)
+    trainer = Trainer(config, pretrained=False)
     os.makedirs(f'logs/{args.logging_dir}/config', exist_ok=True)
     trainer.config.save(f'logs/{args.logging_dir}/config/model_config.yml')
     trainer.train()
