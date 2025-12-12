@@ -10,6 +10,50 @@ function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [processingProgress, setProcessingProgress] = useState(0)
   const fileInputRef = useRef(null)
+  // Unicode-safe text processing
+
+const normalizeText = s => (s || "").normalize("NFC");
+
+// Count grapheme clusters (visible characters), best for Vietnamese
+const countGraphemes = s => {
+  s = normalizeText(s);
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const seg = new Intl.Segmenter("vi", { granularity: "grapheme" });
+    let n = 0;
+    for (const _ of seg.segment(s)) n++;
+    return n;
+  }
+  return Array.from(s).length; // fallback
+};
+
+// Count words safely (Vietnamese-friendly)
+const countWords = s => {
+  s = normalizeText(s).trim();
+  if (!s) return 0;
+
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const seg = new Intl.Segmenter("vi", { granularity: "word" });
+    let n = 0;
+    for (const part of seg.segment(s)) {
+      if (part.isWordLike) n++;
+    }
+    return n;
+  }
+
+  // fallback regex for Unicode letters
+  const matches = s.match(/\p{L}[\p{L}\p{M}'’-]*/gu);
+  return matches ? matches.length : 0;
+};
+
+// Count non-empty lines (handles \n, \r\n, \r)
+const countLines = s => {
+  s = normalizeText(s);
+  return s
+    .split(/\r\n|\r|\n/)
+    .filter(line => line.trim().length > 0)
+    .length;
+};
+
 
   const handleImageSelect = (files) => {
     const newImages = []
@@ -67,71 +111,95 @@ function App() {
       return
     }
     
-    const unprocessedCount = images.filter(img => !img.isProcessed).length
-    if (unprocessedCount === 0) {
+    const unprocessedImages = images.filter(img => !img.isProcessed)
+    if (unprocessedImages.length === 0) {
       toast.info('Tất cả ảnh đã được xử lý rồi!')
       return
     }
     
     setIsProcessing(true)
     setProcessingProgress(0)
-    toast.info(`Bắt đầu xử lý ${unprocessedCount} ảnh... 🚀`)
+    toast.info(`Bắt đầu xử lý ${unprocessedImages.length} ảnh... `)
     
     const API_URL = 'http://localhost:8000/api/ocr'
-    let successCount = 0
-    let errorCount = 0
     
-    for (let i = 0; i < images.length; i++) {
-      if (!images[i].isProcessed) {
-        try {
-          const formData = new FormData()
-          formData.append('file', images[i].file)
-          
-          const response = await fetch(API_URL, {
-            method: 'POST',
-            body: formData,
-          })
-          
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          
-          const result = await response.json()
-          const recognizedText = result.text || 'Không thể nhận diện văn bản'
-          
-          setImages(prev => prev.map((img, idx) => 
-            idx === i ? { ...img, text: recognizedText, isProcessed: true } : img
-          ))
-          
-          successCount++
-          toast.success(`Nhận diện thành công ảnh ${i + 1}!`, { autoClose: 2000 })
-          
-        } catch (error) {
-          console.error('Error recognizing image:', error)
-          errorCount++
-          toast.error(`Lỗi khi xử lý ảnh ${i + 1}: ${error.message}`)
-          
-          setImages(prev => prev.map((img, idx) => 
-            idx === i ? { 
-              ...img, 
-              text: `Lỗi: ${error.message}\n\nKhông thể kết nối đến API. Vui lòng kiểm tra:\n• Backend có đang chạy không?\n• URL API có đúng không?\n• CORS đã được cấu hình chưa?`, 
-              isProcessed: true 
-            } : img
-          ))
-        }
-        
-        setProcessingProgress(((i + 1) / images.length) * 100)
+    try {
+      // Gửi tất cả ảnh cùng lúc theo format backend: images: list[UploadFile]
+      const formData = new FormData()
+      unprocessedImages.forEach(img => {
+        formData.append('images', img.file)
+      })
+      
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-    }
-    
-    setIsProcessing(false)
-    setProcessingProgress(0)
-    
-    // Summary notification
-    if (errorCount === 0) {
-      toast.success(`🎉 Hoàn thành! Đã xử lý thành công ${successCount} ảnh!`, { autoClose: 5000 })
-    } else {
-      toast.warning(`Hoàn thành với ${successCount} thành công và ${errorCount} lỗi`, { autoClose: 5000 })
+      
+      const data = await response.json()
+      
+      // Backend trả về: { "results": [{ "filename": "...", "ocr_text": "...", "confidence": 0.xx }, ...] }
+      if (!data.results || !Array.isArray(data.results)) {
+        throw new Error('Invalid response format from API')
+      }
+      
+      // Cập nhật kết quả cho từng ảnh
+      let successCount = 0
+      let errorCount = 0
+      
+      setImages(prev => prev.map(img => {
+        if (img.isProcessed) return img
+        
+        // Tìm kết quả tương ứng từ API dựa vào filename
+        const result = data.results.find(r => r.filename === img.file.name)
+        
+        if (result) {
+          successCount++
+          return {
+            ...img,
+            text: result.ocr_text,
+            isProcessed: true,
+            confidence: result.confidence
+          }
+        } else {
+          errorCount++
+          return {
+            ...img,
+            text: 'Lỗi: Không tìm thấy kết quả từ API',
+            isProcessed: true
+          }
+        }
+      }))
+      
+      setProcessingProgress(100)
+      
+      // Thông báo kết quả
+      if (errorCount === 0) {
+        toast.success(`🎉 Hoàn thành! Đã xử lý thành công ${successCount} ảnh!`, { autoClose: 5000 })
+      } else {
+        toast.warning(`Hoàn thành với ${successCount} thành công và ${errorCount} lỗi`, { autoClose: 5000 })
+      }
+      
+    } catch (error) {
+      console.error('Error recognizing images:', error)
+      toast.error(`Lỗi khi xử lý: ${error.message}`)
+      
+      // Đánh dấu tất cả ảnh chưa xử lý là lỗi
+      setImages(prev => prev.map(img => {
+        if (img.isProcessed) return img
+        
+        return {
+          ...img,
+          text: `Lỗi: ${error.message}\n\nKhông thể kết nối đến API. Vui lòng kiểm tra:\n• Backend có đang chạy không? (http://localhost:8000)\n• URL API có đúng không? (/api/ocr)\n• CORS đã được cấu hình chưa?`,
+          isProcessed: true
+        }
+      }))
+    } finally {
+      setIsProcessing(false)
+      setProcessingProgress(0)
     }
   }
 
@@ -232,27 +300,27 @@ function App() {
                   <div className="w-full animate-scale-in space-y-4" onClick={(e) => e.stopPropagation()}>
                     {/* Main Image */}
                     {activeImage && (
-                      <div className="relative group">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            {activeImage.isProcessed && (
+                              <span className="px-3 py-1 bg-green-500/90 text-white rounded-lg text-sm font-medium backdrop-blur-sm animate-fade-in inline-block">
+                                ✓ Đã xử lý
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveImage(activeImage.id)}
+                            className="px-3 py-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg backdrop-blur-sm transition-all hover:scale-105 flex items-center gap-2"
+                          >
+                            Xóa
+                          </button>
+                        </div>
                         <img
                           src={activeImage.preview}
                           alt="Preview"
                           className="w-full h-auto rounded-xl shadow-2xl shadow-purple-500/30 border-2 border-purple-500/50"
                         />
-                        <div className="absolute top-3 right-3 flex gap-2">
-                          <button
-                            onClick={() => handleRemoveImage(activeImage.id)}
-                            className="p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg backdrop-blur-sm transition-all"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                        {activeImage.isProcessed && (
-                          <div className="absolute top-3 left-3">
-                            <span className="px-3 py-1 bg-green-500/90 text-white rounded-lg text-sm font-medium backdrop-blur-sm animate-fade-in">
-                              ✓ Đã xử lý
-                            </span>
-                          </div>
-                        )}
                       </div>
                     )}
 
@@ -293,6 +361,12 @@ function App() {
                     {/* Action Buttons */}
                     <div className="flex gap-3">
                       <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-6 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:scale-105 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
+                      >
+                        <span>➕ Thêm ảnh</span>
+                      </button>
+                      <button
                         onClick={handleRecognize}
                         disabled={isProcessing}
                         className="flex-1 px-6 py-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/30 hover:shadow-green-500/50 relative overflow-hidden group"
@@ -305,7 +379,6 @@ function App() {
                             </>
                           ) : (
                             <>
-                              <span>🚀</span>
                               Nhận diện {images.length} ảnh
                             </>
                           )}
@@ -321,7 +394,7 @@ function App() {
                         onClick={handleReset}
                         className="px-6 py-4 bg-gray-700/50 hover:bg-gray-700 text-white rounded-xl font-medium transition-all backdrop-blur-sm border border-gray-600 hover:scale-105"
                       >
-                        🔄 Reset
+                        Reset
                       </button>
                     </div>
                   </div>
@@ -416,7 +489,7 @@ function App() {
                         }}
                         className="px-4 py-2 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition-all text-sm font-medium backdrop-blur-sm hover:scale-105 shadow-lg shadow-blue-500/30"
                       >
-                        📋 Copy ảnh này
+                        Copy ảnh này
                       </button>
                     )}
                     {allText && (
@@ -427,7 +500,7 @@ function App() {
                         }}
                         className="px-4 py-2 bg-purple-600/80 hover:bg-purple-600 text-white rounded-lg transition-all text-sm font-medium backdrop-blur-sm hover:scale-105 shadow-lg shadow-purple-500/30"
                       >
-                        📋 Copy tất cả
+                        Copy tất cả
                       </button>
                     )}
                   </div>
@@ -435,7 +508,7 @@ function App() {
                 
                 {!activeImage?.text && !isProcessing ? (
                   <div className="flex flex-col items-center justify-center h-64 text-gray-400 animate-fade-in">
-                    <div className="text-7xl mb-6 animate-float">📄</div>
+                   
                     <p className="text-center text-lg">Văn bản nhận diện sẽ xuất hiện ở đây</p>
                     <p className="text-center text-sm text-gray-500 mt-2">Upload ảnh và nhấn "Nhận diện" để bắt đầu ✨</p>
                   </div>
@@ -462,12 +535,68 @@ function App() {
                       </div>
                     )}
 
+                    {/* Ảnh để đối chiếu */}
+                    <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl p-4 border border-purple-500/30 backdrop-blur-sm">
+                      <img
+                        src={activeImage.preview}
+                        alt="Reference"
+                        className="w-full h-auto rounded-lg shadow-lg"
+                      />
+                    </div>
+
                     <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl p-6 border-2 border-purple-500/30 backdrop-blur-sm max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-500 scrollbar-track-gray-700">
                       <pre className="whitespace-pre-wrap text-gray-200 text-lg leading-relaxed font-sans">
                         {activeImage.text}
                       </pre>
                     </div>
                     
+                    {/* Confidence Circle */}
+                    {activeImage.confidence !== undefined && (
+                      <div className="bg-gradient-to-br from-green-900/50 to-emerald-900/30 rounded-xl p-6 backdrop-blur-sm border border-green-500/30 hover:scale-105 transition-all">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="text-4xl">🎯</div>
+                            <div>
+                              <div className="text-sm text-gray-400 mb-1">Độ tin cậy</div>
+                              <div className="text-3xl font-bold text-green-300 animate-fade-in">
+                                {(activeImage.confidence * 100).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                          <div className="relative w-32 h-32">
+                            <svg className="transform -rotate-90 w-32 h-32">
+                              <circle
+                                cx="64"
+                                cy="64"
+                                r="56"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                className="text-gray-700"
+                              />
+                              <circle
+                                cx="64"
+                                cy="64"
+                                r="56"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                strokeDasharray={`${2 * Math.PI * 56}`}
+                                strokeDashoffset={`${2 * Math.PI * 56 * (1 - activeImage.confidence)}`}
+                                className="text-green-400 transition-all duration-1000"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-2xl font-bold text-white">
+                                {Math.round(activeImage.confidence * 100)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 rounded-xl p-4 text-center backdrop-blur-sm border border-purple-500/30 hover:scale-105 transition-all">
